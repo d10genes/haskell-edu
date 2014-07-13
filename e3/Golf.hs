@@ -23,9 +23,12 @@ s = ["**", " *", "  "]
 boil :: [String]
 boil = [replicate 10 '=', ['0'..'9']]
 
+preRow :: Int -> [Char]
 preRow = take 9 . (++ replicate 10 ' ') . flip replicate '*'
 
+histogram :: [Int] -> String
 histogram = unlines . dropWhile (all (== ' ')) . (++ boil) . reverse . transpose . map preRow . count
 
+histogram' :: [Int] -> IO ()
 histogram' = putStrLn . histogram
 -- histogram = unlines . reverse . transpose . map preRow . count
