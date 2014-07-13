@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall #-}
 
 module LogAnalysis where
-import Log
-import Text.Read (readMaybe)
+import           Log
+import           Text.Read (readMaybe)
 
 
 parseType :: [String] -> (Maybe MessageType, [String])
@@ -43,11 +43,13 @@ lessLog _ _ = Nothing
 -- tree = Node Leaf (LogMessage (Error 2) 562 "help help") Leaf
 
 l1 = LogMessage (Error 2) 1 "help help"
-l2 = LogMessage (Error 2) 3 "help help"
-l3 = LogMessage (Error 2) 5 "help help"
+l2 = LogMessage (Error 77) 3 "help help"
+l3 = LogMessage (Error 80) 5 "help help"
 l4 = Unknown "blah blah"
-l5 = LogMessage (Error 2) 2 "help help"
+l5 = LogMessage (Error 51) 2 "help help"
 -- l3 = (LogMessage (Error 2) 5 "help help")
+lss = [l3, l4, l1, l2, l5]
+
 
 initTree l = Node Leaf l Leaf
 tree1 = Node (initTree l1) l2 (initTree l3)
@@ -62,9 +64,23 @@ insert ilog Leaf = initTree ilog
 
 build :: [LogMessage] -> MessageTree
 build ls = build' ls Leaf
-                  where build' (l:ls') tree = build' ls' (insert l tree)
-                        build' [] tree = tree
+  where build' ls' tree = foldl (flip insert) tree ls'
 
+inOrder :: MessageTree -> [LogMessage]
+inOrder Leaf = []
+inOrder (Node l lm r) = (inOrder l) ++ [lm] ++ (inOrder r)
+
+
+important :: LogMessage -> Bool
+important (LogMessage (Error i) _ _) = i > 50
+important _ = False
+
+getMsg :: LogMessage -> String
+getMsg (LogMessage _ _ m) = m
+getMsg (Unknown m) = m
+
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong = map getMsg . inOrder . build . filter important
 
 
 
