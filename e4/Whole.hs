@@ -1,5 +1,7 @@
 module Whole where
 
+import Data.List ((\\))
+
 -- Pt 1
 fun1 :: [Integer] -> Integer
 fun1 [] = 1
@@ -32,3 +34,12 @@ xor = foldr (const not) False . filter id
 
 map' :: (a -> b) -> [a] -> [b]
 map' f = foldr ((:) . f) []
+
+f :: Int -> Int -> Int
+f i j = i + j + 2 * i * j
+
+excs :: (Ord a, Num a, Enum a) => a -> [a]
+excs n = filter (<= n) [x + y + 2 * x * y | x <- [1..n], y <- [1..n], x <= y]
+
+sieveSundaram :: Integer -> [Integer]
+sieveSundaram n = map ((1 +) . (2 *)) $ [1..n] \\ excs n
