@@ -1,6 +1,9 @@
 module Calc where
 
 import ExprT
+import Parser
+import Control.Applicative ((<*>), (<$>))
+
 eval :: ExprT -> Integer
 eval n = case n of
            Lit i -> i
@@ -17,3 +20,9 @@ eval n = case n of
 
 e :: ExprT
 e = Lit 10
+
+parse :: String -> Maybe ExprT
+parse = parseExp Lit Add Mul
+
+evalStr :: String -> Maybe Integer
+evalStr = (eval <$>) . parse
