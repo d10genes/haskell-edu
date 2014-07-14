@@ -26,3 +26,19 @@ parse = parseExp Lit Add Mul
 
 evalStr :: String -> Maybe Integer
 evalStr = (eval <$>) . parse
+-- Lit :: Integer -> ExprT
+-- Mul :: ExprT -> ExprT -> ExprT
+
+-- Type class
+class Expr a where
+  lit :: Integer -> a
+  add :: a -> a -> a
+  mul :: a -> a -> a
+
+instance Expr ExprT where
+  lit = Lit
+  add = Add
+  mul = Mul
+
+reify :: ExprT -> ExprT
+reify = id
