@@ -1,14 +1,17 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Calc where
 
-import ExprT
+import qualified ExprT as E
 import Control.Applicative ((<*>), (<$>))
 import Parser
+import qualified Data.Map as M
 
-eval :: ExprT -> Integer
+eval :: E.ExprT -> Integer
 eval n = case n of
-           Lit i -> i
-           Add e1 e2 -> eval e1 + eval e2
-           Mul e1 e2 -> eval e1 * eval e2
+           E.Lit i -> i
+           E.Add e1 e2 -> eval e1 + eval e2
+           E.Mul e1 e2 -> eval e1 * eval e2
 
 -- int :: ExprT -> Integer
 -- int (Lit i) = i
@@ -18,11 +21,11 @@ eval n = case n of
 -- getOp (Mul _ _) = (*)
 
 
-e :: ExprT
-e = Lit 10
+e :: E.ExprT
+e = E.Lit 10
 
-parse :: String -> Maybe ExprT
-parse = parseExp Lit Add Mul
+parse :: String -> Maybe E.ExprT
+parse = parseExp E.Lit E.Add E.Mul
 
 evalStr :: String -> Maybe Integer
 evalStr = (eval <$>) . parse
@@ -35,12 +38,12 @@ class Expr a where
   add :: a -> a -> a
   mul :: a -> a -> a
 
-instance Expr ExprT where
-  lit = Lit
-  add = Add
-  mul = Mul
+instance Expr E.ExprT where
+  lit = E.Lit
+  add = E.Add
+  mul = E.Mul
 
-reify :: ExprT -> ExprT
+reify :: E.ExprT -> E.ExprT
 reify = id
 
 -- reify $ mul (add (lit 2) (lit 3)) (lit 4)
@@ -78,3 +81,28 @@ instance Expr Mod7 where
 
 testExp :: Expr a => Maybe a
 testExp = parseExp lit add mul "(3 * -4) + 5"
+
+class HasVars a where
+  var :: String -> a
+
+data VarExprT = Lit Integer
+           | Add VarExprT VarExprT
+           | Mul VarExprT VarExprT
+           | Var String
+  deriving (Show, Eq)
+
+instance Expr VarExprT where
+  lit = Lit
+  add = Add
+  mul = Mul
+
+instance HasVars VarExprT where
+  var = Var
+
+instance HasVars (M.Map String Integer -> Maybe Integer) where
+  var = M.lookup
+
+instance Expr (M.Map String Integer -> Maybe Integer) where
+  lit = undefined
+  add = undefined
+  mul = undefined
