@@ -1,3 +1,4 @@
 .cabal-sandbox/
 *_flymake.hs
 structured-haskell-mode/
+.depend
