@@ -7,8 +7,10 @@ import Data.Monoid
 import Employee
 import Data.Tree
 import Data.Maybe
-import Control.Applicative ((<$>))
+import Data.List (sortBy)
 import Data.Function (fix)
+import Data.Ord (comparing)
+import Control.Applicative ((<$>))
 import Control.Arrow ((***), (&&&), first)
 import Control.Monad (join)
 
@@ -65,13 +67,11 @@ nextLevel emp@ (Emp _ fun) tups = (maximum plusBoss, maximum . flat $ tups)
         plusPreBoss = map (first preGl) tups
         plusBoss = map (overE (emp:) . overF (+fun)) . flat $ plusPreBoss
 
-
 overF :: (Fun -> Fun) -> GuestList -> GuestList
-overF f (GL es fun) = (GL es (f fun))
+overF f (GL es fun) = GL es (f fun)
 
 overE :: ([Employee] -> [Employee]) -> GuestList -> GuestList
-overE f (GL es fun) = (GL (f es) fun)
-
+overE f (GL es fun) = GL (f es) fun
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
@@ -80,12 +80,29 @@ safeHead (x:_) = Just x
 getEmps :: GuestList -> [Employee]
 getEmps (GL emps _) = emps
 
+getFun :: GuestList -> Fun
+getFun (GL _ fun) = fun
+
 latestFun :: GuestList -> Fun
 latestFun = maybe 0 empFun . safeHead . getEmps
--- latestFun = maybe 0 empFun . fix . const . safeHead . getEmps
 
+-- Ex 4
+nextLevel' :: Employee -> [(GuestList, GuestList)] -> [(GuestList, GuestList)]
+nextLevel' e gs = [nextLevel e gs]
 
-main' :: IO ()
-main' = do
-    putStrLn "Welcome to FP Haskell Center!"
-    putStrLn "Welcome to FP Haskell Center!"
+-- I believe this is wrong...but it checks
+maxFun :: Tree Employee -> GuestList
+maxFun = uncurry max . head . treeFold nextLevel' [(mempty, mempty)]
+
+toTree :: String -> Tree Employee
+toTree = read
+
+main :: IO ()
+main = do
+    contents <- readFile "company.txt"
+    let x = maxFun . toTree $ contents
+    putStrLn . ("Total fun: "++) . show . getFun $ x
+    mapM_ (putStrLn . empName) . getEmps $ x
+    -- mapM_ (putStrLn . empName) . sortBy (comparing empName) . getEmps $ x
+    -- putStrLn "Welcome to FP Haskell Center!"
+    -- putStrLn "Welcome to FP Haskell Center!"
