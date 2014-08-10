@@ -2,6 +2,7 @@ module AParser where
 
 import Control.Applicative
 import Control.Arrow (first)
+import Control.Monad ((>=>), (<=<))
 import Data.Char
 
 -- A parser for a value of type a is a function which takes a String
@@ -55,14 +56,26 @@ posInt = Parser f
 ------------------------------------------------------------
 
 -- f = runParser (satisfy isUpper)
-g = first ord
+-- f s = (length, tail s)
+-- fa s = (" ABC", tail s)
+-- g (f, s') = (first f) (fa s')
+-- h s = ()
+-- a = "ABC"
+
+f s = Just (length, tail s)
+fa s = Just (" ABC", tail s)
+g (f, s') = (first f) <$> (fa s')
+h s = ()
 a = "ABC"
 
 instance Functor Parser where
   fmap f (Parser fp) = Parser (fmap (first f) . fp)
 
 instance Applicative Parser where
-  pure a = Parser (Just . (,) a)
-  (<*>) (Parser f) (Parser g) = Parser h
-    where h s = (first f) <$> g s
-            where res = f s
+  pure a = Parser (\s -> Just (a, s))
+  -- pure a = Parser (Just . (,) a)
+  -- (<*>) :: Parser (a -> b) -> Parser a -> Parser b
+  (<*>) (Parser fab) (Parser fa) = Parser (fab >=> g)
+    where g (f, s') = (first f) <$> (fa s')
+    -- where h s = (first f) <$> g s
+    --         where res = f s
