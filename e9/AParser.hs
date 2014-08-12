@@ -1,3 +1,5 @@
+{-# LANGUAGE PatternGuards #-}
+
 module AParser where
 
 import Control.Applicative
@@ -55,18 +57,11 @@ posInt = Parser f
 -- Your code goes below here
 ------------------------------------------------------------
 
--- f = runParser (satisfy isUpper)
--- f s = (length, tail s)
--- fa s = (" ABC", tail s)
--- g (f, s') = (first f) (fa s')
+-- f s = Just (length, tail s)
+-- fa s = Just (" ABC", tail s)
+-- g (f, s') = (first f) <$> (fa s')
 -- h s = ()
 -- a = "ABC"
-
-f s = Just (length, tail s)
-fa s = Just (" ABC", tail s)
-g (f, s') = (first f) <$> (fa s')
-h s = ()
-a = "ABC"
 
 instance Functor Parser where
   fmap f (Parser fp) = Parser (fmap (first f) . fp)
@@ -74,8 +69,16 @@ instance Functor Parser where
 instance Applicative Parser where
   pure a = Parser (\s -> Just (a, s))
   -- pure a = Parser (Just . (,) a)
-  -- (<*>) :: Parser (a -> b) -> Parser a -> Parser b
-  (<*>) (Parser fab) (Parser fa) = Parser (fab >=> g)
-    where g (f, s') = (first f) <$> (fa s')
-    -- where h s = (first f) <$> g s
-    --         where res = f s
+  -- (<*>) (Parser fab) (Parser fa) = Parser (fab >=> g)
+    -- where g (f, s') = (first f) <$> (fa s')
+  (<*>) (Parser f1) (Parser f2) = Parser g
+    where g s | Just (fab, s') <- f1 s, Just (fa, s'') <- f2 s' = Just (fab fa, s'')
+              | otherwise = Nothing
+
+f ('a':'b':xs) = Just (('a', 'b'), xs)
+f _ = Nothing
+
+abParser = (,) <$> satisfy (== 'a') <*> satisfy (=='b')
+-- runParser abParser "abcdef"
+
+abParser_ = (\_ _-> ()) <$> satisfy (== 'a') <*> satisfy (=='b')
