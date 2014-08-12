@@ -80,5 +80,5 @@ f _ = Nothing
 
 abParser = (,) <$> satisfy (== 'a') <*> satisfy (=='b')
 -- runParser abParser "abcdef"
-
 abParser_ = (\_ _-> ()) <$> satisfy (== 'a') <*> satisfy (=='b')
+intPair = (\a _ c -> [a, c]) <$> posInt <*> satisfy (== ' ') <*> posInt
