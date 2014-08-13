@@ -82,3 +82,9 @@ abParser = (,) <$> satisfy (== 'a') <*> satisfy (=='b')
 -- runParser abParser "abcdef"
 abParser_ = (\_ _-> ()) <$> satisfy (== 'a') <*> satisfy (=='b')
 intPair = (\a _ c -> [a, c]) <$> posInt <*> satisfy (== ' ') <*> posInt
+
+instance Alternative Parser where
+  empty = Parser (const Nothing)
+  (Parser f1) <|> ( Parser f2) = Parser g
+    where g s | res@(Just _) <- f1 s = res
+              | otherwise = f2 s
