@@ -59,3 +59,15 @@ data Atom = N Integer | I Ident
 data SExpr = A Atom
            | Comb [SExpr]
   deriving Show
+
+parseSExpr :: Parser SExpr
+parseSExpr = (A <$> aPattern) <|> (Comb <$> pattern)
+  where pattern = char '(' *> spaces *> oneOrMore parseSExpr <* spaces <* char ')'
+        aPattern = spaces *> parseAtom <* spaces
+
+pp = char '(' *> spaces *> parseAtom <* spaces <* char ')'
+toIdent :: String -> Ident
+toIdent s = s :: Ident
+
+parseAtom :: Parser Atom
+parseAtom = ((N <$> posInt) <|> (I . toIdent <$> ident))
