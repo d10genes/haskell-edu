@@ -32,7 +32,7 @@ type Army = Int
 data Battlefield = Battlefield { attackers :: Army, defenders :: Army }
      deriving (Show)
 
--- battle :: Battlefield -> Rand StdGen Battlefield
+battle :: Battlefield -> Rand StdGen Battlefield
 battle b@Battlefield {attackers, defenders} = do
   -- d <- die
   let (aNum, dNum) = numbAvailable b
@@ -66,8 +66,17 @@ sortDesc = sortBy (flip compare)
 applyLosses :: (Army, Army) -> Battlefield -> Battlefield
 applyLosses (a, d) (Battlefield {attackers, defenders}) = Battlefield {attackers= attackers -a, defenders= defenders-d}
 
+done :: Battlefield -> Bool
+done b = (attackers b < 2) || (defenders b < 1)
+
+invade :: Battlefield -> Rand StdGen Battlefield
+invade b = if done b
+     then return b
+     else battle b >>= invade
+
+b = battle (Battlefield {attackers=6,defenders=7})
+c = (Battlefield {attackers=6,defenders=7})
+
 f = do
     d <- die
     return $ unDV d
-
--- battle Battlefield {attackers=6,defenders=7}
