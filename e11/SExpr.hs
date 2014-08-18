@@ -71,3 +71,5 @@ toIdent s = s :: Ident
 
 parseAtom :: Parser Atom
 parseAtom = ((N <$> posInt) <|> (I . toIdent <$> ident))
+
+-- runParser (parseSExpr) "(((lambda x (lambda y (plus x y))) 3) 5)"
