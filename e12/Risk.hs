@@ -7,6 +7,7 @@ import Control.Monad.Random
 import Control.Monad
 import Data.List
 import Control.Arrow ((&&&), (***))
+import Control.Applicative
 
 ------------------------------------------------------------
 -- Die values
@@ -74,9 +75,17 @@ invade b = if done b
      then return b
      else battle b >>= invade
 
-b = battle (Battlefield {attackers=6,defenders=7})
-c = (Battlefield {attackers=6,defenders=7})
+aggress :: Battlefield -> Bool
+aggress = (0 ==) . defenders
 
-f = do
-    d <- die
-    return $ unDV d
+f = (aggress <$>) . invade
+
+simulate :: Int -> Battlefield -> Rand StdGen Double
+simulate n b = ((/ fromIntegral n) . fromIntegral . length . filter id) <$> sequence (f <$> replicate n b)
+
+successProb :: Battlefield -> Rand StdGen Double
+successProb = simulate 1000
+
+-- evalRandIO $ successProb Battlefield {attackers=9,defenders=7}
+-- b = battle (Battlefield {attackers=6,defenders=7})
+-- c = (Battlefield {attackers=6,defenders=7})
